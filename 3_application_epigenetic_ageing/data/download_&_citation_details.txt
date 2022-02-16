@@ -1,0 +1,14 @@
+# Download via FTP on EWAS datahub (https://ngdc.cncb.ac.cn/ewas/datahub)
+ftp://download.big.ac.cn/ewas/datahub/download/sample_age_methylation_v1.zip
+age_methylation_v1.Rdata age_methylation_v1.zip 11,73G 9h 39m
+line_count=485515
+
+
+# Horvath CpG selection
+grep -f horvath.txt age_methylation_v1.txt > horvath_age_methylation_v1.txt
+
+
+# If you use this resource, please cite data curators at EWAS Datahub:
+Z. Xiong et al (2020). EWAS Data Hub: a resource of DNA methylation array data and metadata.
+Nucleic Acids Res. 2020 Jan 8;48(D1):D890-D895. doi: 10.1093/nar/gkz840. 
+(https://academic.oup.com/nar/article/48/D1/D890/5580903?login=true)
