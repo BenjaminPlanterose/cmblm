@@ -31,7 +31,7 @@ Under the folder /Scripts/ you may find all  R-scripts employed in the data anal
 Please contact me at b.planterosejimenez@erasmusmc.nl for any questions or issues concerning the scripts.
 
 ### References and Supporting Information
-B. Planterose *et al* (**2020**). Combinatorial linear models: an imputation-free method for linear regression prediction on datasets with missing values. *Biostatistics*
+B. Planterose *et al* (**2022**). Combinatorial linear models: an imputation-free method for linear regression prediction on datasets with missing values. *Biostatistics*
 
 
 
