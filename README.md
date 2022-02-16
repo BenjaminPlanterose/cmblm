@@ -4,21 +4,19 @@
 
 <sup>1</sup> Department of Genetic Identification, Erasmus MC University Medical Center Rotterdam, Rotterdam, the Netherlands.
 
-<sup>4</sup> Institute of Medical Informatics and Statistics, Kiel University, Kiel, Germany.
+<sup>2</sup> Institute of Medical Informatics and Statistics, Kiel University, Kiel, Germany.
 
-<sup>5</sup> University Medical Centre Schleswig-Holstein, Kiel, Germany.
+<sup>3</sup> University Medical Centre Schleswig-Holstein, Kiel, Germany.
 
 
-## Requirements
+## Tested on:
 
-    Operating system: tested on Ubuntu 16.04LTS
-    R: tested on R version 3.4.4 (2018-03-15) -- "Someone to Lean On"
-    RAM requirements: Especially for data preprocessing, do not attempt to run without at least 50 GB of RAM.
-
+    Operating system: Ubuntu 16.04LTS
+    R: R version 4.1.2 (2021-11-01) -- "Bird Hippie"
 
 ## Structure
 
-Under the folder /Scripts/ you may find all  R-scripts employed in the data analysis of our *Biostatistics* paper. These are separated into the 3 sections, corresponding to those of the paper:
+All R-scripts employed are included and segmented as per sections in our publication in Biostatistics.
 
   1) *Theory*: 
   
