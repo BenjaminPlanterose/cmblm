@@ -18,11 +18,11 @@
 
 All R-scripts employed are included and segmented as per sections in our publication in Biostatistics.
 
-  1) *Theory*: 
+  1) **Theory**: 
   
-  2) *Simulations*: 
+  2) **Simulations**: 
   
-  3) *Application: 
+  3) **Application**: 
   
 
 
