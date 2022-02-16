@@ -1,0 +1,546 @@
+[1] "############################## Simulation 1 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = A)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.7115 -0.2122 -0.0051  0.2013  3.2065 
+
+Coefficients:
+               Estimate Std. Error  t value Pr(>|t|)    
+(Intercept)   9.104e-02  5.961e-03   15.274   <2e-16 ***
+n             3.236e-04  2.029e-05   15.950   <2e-16 ***
+R2            1.415e+00  5.782e-03  244.687   <2e-16 ***
+pNA          -7.179e-01  7.163e-03 -100.220   <2e-16 ***
+variablefull  3.730e-01  4.537e-03   82.205   <2e-16 ***
+variablemean  1.272e-03  4.556e-03    0.279     0.78    
+variableMICE -1.257e-01  4.589e-03  -27.398   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3514 on 47295 degrees of freedom
+  (698 observations deleted due to missingness)
+Multiple R-squared:  0.6372,	Adjusted R-squared:  0.6371 
+F-statistic: 1.384e+04 on 6 and 47295 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 2 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = A)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.8347 -0.2214 -0.0009  0.2161  3.6605 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.367e-01  6.240e-03   21.91   <2e-16 ***
+n             5.241e-04  2.124e-05   24.68   <2e-16 ***
+R2            1.407e+00  6.053e-03  232.48   <2e-16 ***
+pNA          -7.909e-01  7.499e-03 -105.46   <2e-16 ***
+variablefull  3.182e-01  4.749e-03   67.00   <2e-16 ***
+variablemean -1.575e-01  4.769e-03  -33.02   <2e-16 ***
+variableMICE -2.036e-01  4.804e-03  -42.38   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3678 on 47283 degrees of freedom
+  (710 observations deleted due to missingness)
+Multiple R-squared:  0.6275,	Adjusted R-squared:  0.6275 
+F-statistic: 1.328e+04 on 6 and 47283 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 3 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.6608 -0.2178 -0.0027  0.2085  2.7405 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.634e-01  6.119e-03   26.70   <2e-16 ***
+n             4.582e-04  2.083e-05   21.99   <2e-16 ***
+R2            1.351e+00  5.936e-03  227.64   <2e-16 ***
+pNA          -7.689e-01  7.357e-03 -104.51   <2e-16 ***
+variablefull  3.324e-01  4.657e-03   71.37   <2e-16 ***
+variablemean -1.696e-01  4.678e-03  -36.25   <2e-16 ***
+variableMICE -2.028e-01  4.711e-03  -43.05   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3607 on 47274 degrees of freedom
+  (719 observations deleted due to missingness)
+Multiple R-squared:  0.6254,	Adjusted R-squared:  0.6254 
+F-statistic: 1.316e+04 on 6 and 47274 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 4 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = A)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.4070 -0.2121  0.0000  0.2066  3.6044 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   0.0237956  0.0061810    3.85 0.000118 ***
+n             0.0003583  0.0000213   16.82  < 2e-16 ***
+R2            1.4773563  0.0060398  244.60  < 2e-16 ***
+pNA          -0.6709649  0.0079502  -84.40  < 2e-16 ***
+variablefull  0.3796665  0.0045832   82.84  < 2e-16 ***
+variablemean  0.0123675  0.0047394    2.61 0.009070 ** 
+variableMICE -0.0955172  0.0049095  -19.46  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.355 on 44221 degrees of freedom
+  (3772 observations deleted due to missingness)
+Multiple R-squared:  0.6359,	Adjusted R-squared:  0.6358 
+F-statistic: 1.287e+04 on 6 and 44221 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 5 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.35137 -0.22118  0.00235  0.21776  2.37859 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   9.058e-02  6.362e-03   14.24   <2e-16 ***
+n             4.774e-04  2.188e-05   21.82   <2e-16 ***
+R2            1.467e+00  6.215e-03  236.02   <2e-16 ***
+pNA          -7.585e-01  8.182e-03  -92.70   <2e-16 ***
+variablefull  3.313e-01  4.713e-03   70.29   <2e-16 ***
+variablemean -1.548e-01  4.876e-03  -31.75   <2e-16 ***
+variableMICE -1.796e-01  5.046e-03  -35.59   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3651 on 44231 degrees of freedom
+  (3762 observations deleted due to missingness)
+Multiple R-squared:  0.6328,	Adjusted R-squared:  0.6328 
+F-statistic: 1.271e+04 on 6 and 44231 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 6 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.96512 -0.21876 -0.00059  0.21390  2.46322 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   9.456e-02  6.322e-03   14.96   <2e-16 ***
+n             3.650e-04  2.174e-05   16.79   <2e-16 ***
+R2            1.441e+00  6.166e-03  233.73   <2e-16 ***
+pNA          -6.696e-01  8.139e-03  -82.27   <2e-16 ***
+variablefull  3.318e-01  4.678e-03   70.92   <2e-16 ***
+variablemean -1.644e-01  4.841e-03  -33.96   <2e-16 ***
+variableMICE -1.808e-01  5.011e-03  -36.08   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3623 on 44199 degrees of freedom
+  (3794 observations deleted due to missingness)
+Multiple R-squared:  0.6257,	Adjusted R-squared:  0.6256 
+F-statistic: 1.231e+04 on 6 and 44199 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 7 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = A)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.5060 -0.2111 -0.0047  0.2065  3.6251 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   7.576e-02  6.005e-03   12.62   <2e-16 ***
+n             3.260e-04  2.058e-05   15.85   <2e-16 ***
+R2            1.448e+00  5.845e-03  247.73   <2e-16 ***
+pNA          -7.137e-01  7.321e-03  -97.50   <2e-16 ***
+variablefull  3.659e-01  4.555e-03   80.34   <2e-16 ***
+variablemean  5.468e-03  4.595e-03    1.19    0.234    
+variableMICE -1.156e-01  4.660e-03  -24.81   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3528 on 46641 degrees of freedom
+  (1352 observations deleted due to missingness)
+Multiple R-squared:  0.6389,	Adjusted R-squared:  0.6389 
+F-statistic: 1.375e+04 on 6 and 46641 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 8 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.61061 -0.22318 -0.00103  0.21617  2.20166 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.430e-01  6.197e-03   23.07   <2e-16 ***
+n             4.025e-04  2.124e-05   18.95   <2e-16 ***
+R2            1.418e+00  6.029e-03  235.29   <2e-16 ***
+pNA          -7.750e-01  7.553e-03 -102.62   <2e-16 ***
+variablefull  3.293e-01  4.699e-03   70.08   <2e-16 ***
+variablemean -1.550e-01  4.743e-03  -32.67   <2e-16 ***
+variableMICE -1.979e-01  4.804e-03  -41.18   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.364 on 46639 degrees of freedom
+  (1354 observations deleted due to missingness)
+Multiple R-squared:  0.632,	Adjusted R-squared:  0.632 
+F-statistic: 1.335e+04 on 6 and 46639 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 9 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = A)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.4094 -0.2207 -0.0027  0.2115  3.5197 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.590e-01  6.189e-03   25.70   <2e-16 ***
+n             3.791e-04  2.121e-05   17.88   <2e-16 ***
+R2            1.366e+00  6.021e-03  226.88   <2e-16 ***
+pNA          -7.315e-01  7.540e-03  -97.02   <2e-16 ***
+variablefull  3.304e-01  4.695e-03   70.38   <2e-16 ***
+variablemean -1.801e-01  4.735e-03  -38.04   <2e-16 ***
+variableMICE -2.054e-01  4.801e-03  -42.79   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3636 on 46668 degrees of freedom
+  (1325 observations deleted due to missingness)
+Multiple R-squared:  0.6205,	Adjusted R-squared:  0.6205 
+F-statistic: 1.272e+04 on 6 and 46668 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 10 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.15208 -0.21320 -0.00545  0.20552  2.78314 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   8.282e-02  5.976e-03   13.86   <2e-16 ***
+n             3.679e-04  2.048e-05   17.97   <2e-16 ***
+R2            1.418e+00  5.812e-03  243.94   <2e-16 ***
+pNA          -7.331e-01  7.271e-03 -100.83   <2e-16 ***
+variablefull  3.772e-01  4.535e-03   83.18   <2e-16 ***
+variablemean  3.979e-03  4.573e-03    0.87    0.384    
+variableMICE -1.166e-01  4.629e-03  -25.18   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3513 on 46743 degrees of freedom
+  (1250 observations deleted due to missingness)
+Multiple R-squared:  0.6374,	Adjusted R-squared:  0.6374 
+F-statistic: 1.37e+04 on 6 and 46743 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 11 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.46631 -0.22060 -0.00133  0.21353  2.03727 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.341e-01  6.125e-03   21.89   <2e-16 ***
+n             5.162e-04  2.097e-05   24.61   <2e-16 ***
+R2            1.410e+00  5.957e-03  236.63   <2e-16 ***
+pNA          -7.767e-01  7.452e-03 -104.23   <2e-16 ***
+variablefull  3.197e-01  4.650e-03   68.75   <2e-16 ***
+variablemean -1.553e-01  4.687e-03  -33.15   <2e-16 ***
+variableMICE -2.009e-01  4.744e-03  -42.34   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3602 on 46778 degrees of freedom
+  (1215 observations deleted due to missingness)
+Multiple R-squared:  0.6348,	Adjusted R-squared:  0.6348 
+F-statistic: 1.355e+04 on 6 and 46778 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 12 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.66734 -0.21914 -0.00375  0.20917  2.23980 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.455e-01  6.089e-03   23.89   <2e-16 ***
+n             4.802e-04  2.083e-05   23.05   <2e-16 ***
+R2            1.364e+00  5.922e-03  230.34   <2e-16 ***
+pNA          -7.392e-01  7.406e-03  -99.81   <2e-16 ***
+variablefull  3.274e-01  4.622e-03   70.83   <2e-16 ***
+variablemean -1.663e-01  4.658e-03  -35.70   <2e-16 ***
+variableMICE -2.018e-01  4.714e-03  -42.80   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.358 on 46804 degrees of freedom
+  (1189 observations deleted due to missingness)
+Multiple R-squared:  0.6261,	Adjusted R-squared:  0.6261 
+F-statistic: 1.306e+04 on 6 and 46804 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 13 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.26778 -0.19476  0.00068  0.19721  2.35496 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   2.429e-02  5.785e-03   4.198 2.70e-05 ***
+n             3.215e-04  1.995e-05  16.118  < 2e-16 ***
+R2            1.622e+00  5.653e-03 286.875  < 2e-16 ***
+pNA          -5.784e-01  7.569e-03 -76.424  < 2e-16 ***
+variablefull  2.761e-01  4.259e-03  64.829  < 2e-16 ***
+variablemean -2.481e-02  4.441e-03  -5.587 2.32e-08 ***
+variableMICE -8.750e-02  4.626e-03 -18.915  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3299 on 43603 degrees of freedom
+  (4390 observations deleted due to missingness)
+Multiple R-squared:  0.6846,	Adjusted R-squared:  0.6846 
+F-statistic: 1.578e+04 on 6 and 43603 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 14 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.1723 -0.2165 -0.0018  0.2155  2.4321 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   0.0879110  0.0062636   14.04   <2e-16 ***
+n             0.0004161  0.0000216   19.26   <2e-16 ***
+R2            1.5947768  0.0061200  260.58   <2e-16 ***
+pNA          -0.7169550  0.0081911  -87.53   <2e-16 ***
+variablefull  0.2553893  0.0046124   55.37   <2e-16 ***
+variablemean -0.1760732  0.0048052  -36.64   <2e-16 ***
+variableMICE -0.1680501  0.0050148  -33.51   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3573 on 43605 degrees of freedom
+  (4388 observations deleted due to missingness)
+Multiple R-squared:  0.6586,	Adjusted R-squared:  0.6586 
+F-statistic: 1.402e+04 on 6 and 43605 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 15 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.83449 -0.21679  0.00304  0.21435  2.06049 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.240e-01  6.302e-03   19.68   <2e-16 ***
+n             4.272e-04  2.171e-05   19.68   <2e-16 ***
+R2            1.451e+00  6.149e-03  236.06   <2e-16 ***
+pNA          -7.535e-01  8.226e-03  -91.60   <2e-16 ***
+variablefull  3.094e-01  4.641e-03   66.67   <2e-16 ***
+variablemean -2.132e-01  4.831e-03  -44.13   <2e-16 ***
+variableMICE -1.888e-01  5.032e-03  -37.52   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3595 on 43702 degrees of freedom
+  (4291 observations deleted due to missingness)
+Multiple R-squared:  0.6368,	Adjusted R-squared:  0.6367 
+F-statistic: 1.277e+04 on 6 and 43702 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 16 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = A)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.5424 -0.2116 -0.0030  0.2000  3.4015 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   0.0811246  0.0060028   13.51   <2e-16 ***
+n             0.0003581  0.0000206   17.39   <2e-16 ***
+R2            1.2947684  0.0058462  221.47   <2e-16 ***
+pNA          -0.6457402  0.0073429  -87.94   <2e-16 ***
+variablefull  0.4227956  0.0045492   92.94   <2e-16 ***
+variablemean -0.0535503  0.0045941  -11.66   <2e-16 ***
+variableMICE -0.1539997  0.0046664  -33.00   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3524 on 46499 degrees of freedom
+  (1494 observations deleted due to missingness)
+Multiple R-squared:  0.6148,	Adjusted R-squared:  0.6147 
+F-statistic: 1.237e+04 on 6 and 46499 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 17 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.22338 -0.21901 -0.00355  0.21026  2.68201 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.603e-01  6.070e-03   26.41   <2e-16 ***
+n             4.217e-04  2.083e-05   20.25   <2e-16 ***
+R2            1.327e+00  5.909e-03  224.57   <2e-16 ***
+pNA          -7.128e-01  7.417e-03  -96.11   <2e-16 ***
+variablefull  3.391e-01  4.601e-03   73.70   <2e-16 ***
+variablemean -2.061e-01  4.647e-03  -44.34   <2e-16 ***
+variableMICE -2.262e-01  4.713e-03  -47.99   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3564 on 46532 degrees of freedom
+  (1461 observations deleted due to missingness)
+Multiple R-squared:  0.6255,	Adjusted R-squared:  0.6254 
+F-statistic: 1.295e+04 on 6 and 46532 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 18 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.27464 -0.21420 -0.00318  0.20464  2.33289 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.419e-01  6.008e-03   23.62   <2e-16 ***
+n             4.377e-04  2.063e-05   21.21   <2e-16 ***
+R2            1.296e+00  5.850e-03  221.53   <2e-16 ***
+pNA          -6.578e-01  7.343e-03  -89.59   <2e-16 ***
+variablefull  3.502e-01  4.552e-03   76.95   <2e-16 ***
+variablemean -1.991e-01  4.598e-03  -43.31   <2e-16 ***
+variableMICE -2.136e-01  4.669e-03  -45.74   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3526 on 46490 degrees of freedom
+  (1503 observations deleted due to missingness)
+Multiple R-squared:  0.6198,	Adjusted R-squared:  0.6197 
+F-statistic: 1.263e+04 on 6 and 46490 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 19 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.44310 -0.20859 -0.00491  0.20104  2.35157 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   8.127e-02  5.899e-03  13.778  < 2e-16 ***
+n             3.600e-04  2.021e-05  17.818  < 2e-16 ***
+R2            1.456e+00  5.741e-03 253.657  < 2e-16 ***
+pNA          -6.682e-01  7.192e-03 -92.904  < 2e-16 ***
+variablefull  3.350e-01  4.475e-03  74.845  < 2e-16 ***
+variablemean -3.153e-02  4.514e-03  -6.984  2.9e-12 ***
+variableMICE -1.431e-01  4.574e-03 -31.278  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3467 on 46686 degrees of freedom
+  (1307 observations deleted due to missingness)
+Multiple R-squared:  0.6447,	Adjusted R-squared:  0.6447 
+F-statistic: 1.412e+04 on 6 and 46686 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 20 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.28986 -0.22638  0.00089  0.21931  2.72202 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.581e-01  6.265e-03   25.23   <2e-16 ***
+n             4.723e-04  2.148e-05   21.99   <2e-16 ***
+R2            1.430e+00  6.099e-03  234.54   <2e-16 ***
+pNA          -8.220e-01  7.647e-03 -107.50   <2e-16 ***
+variablefull  3.037e-01  4.754e-03   63.89   <2e-16 ***
+variablemean -1.941e-01  4.798e-03  -40.46   <2e-16 ***
+variableMICE -2.208e-01  4.858e-03  -45.45   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3683 on 46674 degrees of freedom
+  (1319 observations deleted due to missingness)
+Multiple R-squared:  0.6343,	Adjusted R-squared:  0.6343 
+F-statistic: 1.349e+04 on 6 and 46674 DF,  p-value: < 2.2e-16
+
+[1] "############################## Simulation 21 ##############################"
+
+Call:
+lm(formula = atanh(value) ~ n + R2 + pNA + variable, data = res.m)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.1245 -0.2164  0.0010  0.2126  2.6013 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.705e-01  6.169e-03   27.65   <2e-16 ***
+n             4.572e-04  2.115e-05   21.62   <2e-16 ***
+R2            1.370e+00  6.004e-03  228.16   <2e-16 ***
+pNA          -7.635e-01  7.527e-03 -101.44   <2e-16 ***
+variablefull  3.124e-01  4.683e-03   66.72   <2e-16 ***
+variablemean -2.095e-01  4.725e-03  -44.35   <2e-16 ***
+variableMICE -2.214e-01  4.784e-03  -46.28   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3627 on 46682 degrees of freedom
+  (1311 observations deleted due to missingness)
+Multiple R-squared:  0.6261,	Adjusted R-squared:  0.6261 
+F-statistic: 1.303e+04 on 6 and 46682 DF,  p-value: < 2.2e-16
+
