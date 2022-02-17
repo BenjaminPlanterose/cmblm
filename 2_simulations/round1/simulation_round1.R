@@ -48,8 +48,6 @@ simulation <- function(mu, Cov, theta, p_h, typeNA, subtype, N_iter, conditions,
     }
     conditions[i, 4:ncol(conditions)] = sapply(1:ncol(res), function(x) paste(round(res[,x], 3), collapse = ", "))
   }
-  
-  #return(conditions)
   return(prep_results(conditions, typeNA, subtype, dep, N_iter))
 }
 
@@ -114,7 +112,6 @@ inject.NA <- function(data, p, type, subtype = NULL)
 MCAR <- function(X, p)
 {
   n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   k = 0:(m-1)
   probs = choose(m, k)*p^k*(1-p)^(m-k)/(1-p^m)
   n_missing = sample(k, n, replace = T, prob = probs)
@@ -130,7 +127,6 @@ MCAR <- function(X, p)
 MNAR <- function(X, p, subtype)
 {
   x = as.numeric(X); n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   if(subtype == "R")
   {
     k = uniroot(f = function(k) mean(logistic(x + k)) - p, interval = c(-50, 50))$root
@@ -151,7 +147,7 @@ MNAR <- function(X, p, subtype)
     k = uniroot(f = function(k) mean(1 - logistic(abs(x) + k)) - p, interval = c(-50, 50))$root
     A = as.numeric(1 - logistic(abs(X) + k))
   }
-  #print(k)
+  
   res = matrix(sapply(1:length(A), function(x) sample(c(1,0), size = 1, prob = c(A[x], 1 - A[x]))), nrow(X), ncol(X))
   
   # Rescue pattern - all missing values
@@ -176,7 +172,6 @@ rescue_pattern <- function(res, A, S)
   for(i in 1:length(S))
   {
     probs = sapply(1:nrow(pattern), function(x) sum(log(A[S[i],]^pattern[x,]*(1-A[S[i],])^(1 - pattern[x,]))))
-    #probs = exp(probs - min(probs))
     probs = exp(probs)
     probs = probs/sum(probs)
     res[S[i],] = pattern[sample(1:nrow(pattern), 1, prob = probs),]
@@ -188,7 +183,6 @@ rescue_pattern <- function(res, A, S)
 MAR <- function(X, p, subtype)
 {
   n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   X_mut = matrix(NA, nrow(X), ncol(X))
   for(j in 1:ncol(X)) # Cyclic permutation
   {
@@ -237,7 +231,6 @@ test_mean_mode <- function(data)
   X_impute = data$app$X
   I = is.na(X_impute)
   NA_count = colSums(I)
-  # means = colMeans(data$ref$X) # population means from the reference dataset
   means = colMeans(data$app$X, na.rm = T) # population means from the application dataset
   u = sapply(1:length(means), function(x) rep(means[x], NA_count[x]))
   u = unlist(u)
@@ -252,10 +245,7 @@ test_mice <- function(data)
   df = as.data.frame(data$ref$X)
   df$y = data$ref$y
   lm_mod = lm(formula = y ~ ., data = df)
-  mice_out = mice(data$app$X, m = 1, printFlag = F, method = "pmm", remove.collinear = F) # in Iris maxit=50
-  #mice_out = mice(data$app$X, m = 1, printFlag = F, method = "norm", remove.collinear = F) # in Iris maxit=50
-  #mice_out = mice(data$app$X, m = 1, printFlag = F, method = "mean", remove.collinear = F) # in Iris maxit=50
-  #mice_out = mice(data$app$X, m = 1, printFlag = F, method = "quadratic", remove.collinear = F) # in Iris maxit=50
+  mice_out = mice(data$app$X, m = 1, printFlag = F, method = "pmm", remove.collinear = F)
   data$app$X = complete(mice_out, 1)
   y_pred = predict(lm_mod, as.data.frame(data$app$X))
   metric(y_pred, data$app0$y)
@@ -286,7 +276,6 @@ theta_omega <- function(XtX, omega_c)
 metric <- function(pred, obs)
 {
   rho = cor(pred, obs)
-  #atanh(rho)
   rho
 }
 
@@ -317,35 +306,8 @@ prep_results <- function(RES, typeNA, subtype, dep, N_iter)
                   sep = "")) +
     ylab("cor^2(y_hat, y)") + ylim(c(0,1))
   res.m$variable = relevel(factor(res.m$variable), ref = "cmbLM")
-  #mod1 = lm(atanh(value) ~ n + R2 + pNA + variable, data = res.m)
   mod1 = tryCatch(lm(atanh(value) ~ n + R2 + pNA + variable, data = res.m), error=function(e){NA})
-  #print(summary(mod1))
-  #print(g1)
   return(list(graphic = g1, mod = mod1, res.m = res.m))
-}
-
-
-# (Discontinued)
-
-
-# (Discontinued) Test cmb-lm
-test_cmb_lm0 <- function(data)
-{
-  create_Ip <- function(p)
-  {
-    diag(length(p))[, !p]
-  }
-  
-  X_ = cbind(1, data$ref$X)
-  QR = qr(X_)
-  R = qr.R(QR, complete = F)
-  theta = ginv(X_) %*% data$ref$y
-  Qt_y = R %*% theta
-  X_t = cbind(1, data$app$X)
-  Indicator = is.na(X_t)
-  I_list = lapply(1:nrow(Indicator), function(x) create_Ip(Indicator[x,]))
-  y_pred = sapply(1:nrow(X_t), function(x) na.omit(X_t[x,]) %*% ginv(R %*% I_list[[x]]) %*% Qt_y)
-  metric(y_pred, data$app0$y)
 }
 
 
@@ -523,16 +485,6 @@ out19 = simulation(mu = mu, Cov = Cov_ind, theta = theta, p_h = p_h, N_iter = N_
                   typeNA = "MNAR", subtype = "C", conditions = conditions, 
                   dep = "independent")
 
-# Error in diag(length(p)) : 
-#   could not find symbol "names" in environment of the generic function
-# In addition: There were 50 or more warnings (use warnings() to see the first 50)
-# create_Ip <- function(p)
-# {
-#   diag(length(p))[, !p]
-# }
-# [1] "235 out of 240"
-
-
 ########################## Simulation 20: wd+MNAR+C ##########################
 set.seed(142)
 out20 = simulation(mu = mu, Cov = Cov_wd, theta = theta, p_h = p_h, N_iter = N_iter,
@@ -553,10 +505,9 @@ out = list(out1 = out1,   out2 = out2,   out3 = out3,   out4 = out4,   out5 = ou
            out11 = out11, out12 = out12, out13 = out13, out14 = out14, out15 = out15, 
            out16 = out16, out17 = out17, out18 = out18, out19 = out19, out20 = out20, 
            out21 = out21)
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round1/")
 saveRDS(out, "results_1_0.Rds")
 
-################################## Solve errors in lm ##################################
+################################## Solve errors in lm calls for summary statistics of simulation ##################################
 
 # round(value, 3)
 # if rho = +-1, atanh = +Inf. Linear model spits error:
@@ -570,14 +521,24 @@ for(i in 1:length(where))
   out[[where[i]]]$mod = lm(atanh(value) ~ n + R2 + pNA + variable, data = A)
 }
 where = which(sapply(out, function(x) tryCatch(is.na(x$mod$rank), error=function(e){T})))
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round1/")
 saveRDS(out, "results_1.Rds")
 
+########################## Read results ##########################
 
-##
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round4/")
-saveRDS(out2, "result_out2_quadraticMICE.Rds")
-##
+out = readRDS("results_1.Rds")
+# Modify graphical parameters in ggplot calls
+sapply(1:length(out), function(x) out[[x]]$graphic$layers[[1]]$aes_params$alpha <<- 0.025)
+sapply(1:length(out), function(x) out[[x]]$graphic$layers[[2]]$aes_params <<- list(alpha = 0.2, size = 0.3, linetype = 1))
+# Capture summary of all linear models
+for(i in 1:length(out))
+{
+  message(i)
+  ggsave(plot = out[[i]]$graphic, paste('round1_simulation', i, '.pdf', sep = ''))
+  ggsave(plot = out[[i]]$graphic, paste('round1_simulation', i, '.tiff', sep = ''), dpi = 300)
+  capture.output(print(paste('############################## Simulation', i, '##############################')), 
+                 file = 'linear_models.txt', append = T)
+  capture.output(summary(out[[i]]$mod), file = 'linear_models.txt', append = T)
+}
 
 ################################## Session Info ##################################
 
@@ -638,22 +599,4 @@ sessionInfo()
 # [129] tidyr_1.1.4                 base64_2.0                  minqa_1.2.4                 DelayedMatrixStats_1.14.3  
 # [133] illuminaio_0.34.0           MatrixGenerics_1.4.3        Biobase_2.52.0              restfulr_0.0.13  
 
-########################## Read results ##########################
-
-
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round1/")
-out = readRDS("results_1.Rds")
-sapply(1:length(out), function(x) out[[x]]$graphic$layers[[1]]$aes_params$alpha <<- 0.025)
-sapply(1:length(out), function(x) out[[x]]$graphic$layers[[2]]$aes_params <<- list(alpha = 0.2, size = 0.3, linetype = 1))
-
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/')
-for(i in 1:length(out))
-{
-  message(i)
-  ggsave(plot = out[[i]]$graphic, paste('round1_simulation', i, '.pdf', sep = ''))
-  ggsave(plot = out[[i]]$graphic, paste('round1_simulation', i, '.tiff', sep = ''), dpi = 300)
-  capture.output(print(paste('############################## Simulation', i, '##############################')), 
-                 file = 'linear_models.txt', append = T)
-  capture.output(summary(out[[i]]$mod), file = 'linear_models.txt', append = T)
-}
 

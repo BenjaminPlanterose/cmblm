@@ -19,7 +19,6 @@ library(gplots)
 library(mice)
 library(gtools)
 library(matrixStats)
-#library(imputeMissings)
 library(ggplot2)
 library(reshape)
 library(Matrix)
@@ -42,7 +41,6 @@ simulation <- function(mu, Cov, theta, p_h, N_iter, conditions, dep)
   {
     pNA = conditions[i,"pNA"]
     print(paste(i, "out of", nrow(conditions)))
-    #res = matrix(ncol = 4, nrow = N_iter)
     for(l in 1:N_iter)
     {
       k = min(which(results$pNA == pNA))
@@ -105,8 +103,6 @@ simulation <- function(mu, Cov, theta, p_h, N_iter, conditions, dep)
       k = k+4
     }
   }
-  
-  #return(results)
   return(prep_results(results, dep, N_iter))
 }
 
@@ -171,7 +167,6 @@ inject.NA <- function(data, p, type, subtype = NULL)
 MCAR <- function(X, p)
 {
   n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   k = 0:(m-1)
   probs = choose(m, k)*p^k*(1-p)^(m-k)/(1-p^m)
   n_missing = sample(k, n, replace = T, prob = probs)
@@ -187,7 +182,6 @@ MCAR <- function(X, p)
 MNAR <- function(X, p, subtype)
 {
   x = as.numeric(X); n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   if(subtype == "R")
   {
     k = uniroot(f = function(k) mean(logistic(x + k)) - p, interval = c(-50, 50))$root
@@ -208,7 +202,6 @@ MNAR <- function(X, p, subtype)
     k = uniroot(f = function(k) mean(1 - logistic(abs(x) + k)) - p, interval = c(-50, 50))$root
     A = as.numeric(1 - logistic(abs(X) + k))
   }
-  #print(k)
   res = matrix(sapply(1:length(A), function(x) sample(c(1,0), size = 1, prob = c(A[x], 1 - A[x]))), nrow(X), ncol(X))
   
   # Rescue pattern - all missing values
@@ -233,7 +226,6 @@ rescue_pattern <- function(res, A, S)
   for(i in 1:length(S))
   {
     probs = sapply(1:nrow(pattern), function(x) sum(log(A[S[i],]^pattern[x,]*(1-A[S[i],])^(1 - pattern[x,]))))
-    #probs = exp(probs - min(probs))
     probs = exp(probs)
     probs = probs/sum(probs)
     res[S[i],] = pattern[sample(1:nrow(pattern), 1, prob = probs),]
@@ -245,7 +237,6 @@ rescue_pattern <- function(res, A, S)
 MAR <- function(X, p, subtype)
 {
   n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   X_mut = matrix(NA, nrow(X), ncol(X))
   for(j in 1:ncol(X)) # Cyclic permutation
   {
@@ -294,7 +285,7 @@ test_mean_mode <- function(data, mode)
   X_impute = data$app$X
   I = is.na(X_impute)
   NA_count = colSums(I)
-  means = colMeans(data$app$X, na.rm = T) # population means from the reference dataset
+  means = colMeans(data$app$X, na.rm = T) # population means from the application dataset
   u = sapply(1:length(means), function(x) rep(means[x], NA_count[x]))
   u = unlist(u)
   X_impute[I] = u
@@ -309,7 +300,7 @@ test_mice <- function(data, mode)
   df = as.data.frame(data$ref$X)
   df$y = data$ref$y
   lm_mod = lm(formula = y ~ ., data = df)
-  mice_out = mice(data$app$X, m = 1, printFlag = F, method = "pmm", remove.collinear = F) # in Iris maxit=50
+  mice_out = mice(data$app$X, m = 1, printFlag = F, method = "pmm", remove.collinear = F)
   data$app$X = complete(mice_out, 1)
   y_pred = predict(lm_mod, as.data.frame(data$app$X))
   metric(y_pred, data$app0$y, mode)
@@ -339,40 +330,20 @@ test_cmb_lm <- function(data, mode)
   metric(y_pred, data$app0$y, mode)
 }
 
-
-# Test cmb-lm (deprecated)
-test_cmb_lm0 <- function(data, mode)
-{
-  create_Ip <- function(p)
-  {
-    diag(length(p))[, !p]
-  }
-  
-  X_ = cbind(1, data$ref$X)
-  QR = qr(X_)
-  R = qr.R(QR, complete = F)
-  theta = ginv(X_) %*% data$ref$y
-  Qt_y = R %*% theta
-  X_t = cbind(1, data$app$X)
-  Indicator = is.na(X_t)
-  I_list = lapply(1:nrow(Indicator), function(x) create_Ip(Indicator[x,]))
-  y_pred = sapply(1:nrow(X_t), function(x) na.omit(X_t[x,]) %*% ginv(R %*% I_list[[x]]) %*% Qt_y)
-  metric(y_pred, data$app0$y, mode)
-}
-
+#
 metric <- function(pred, obs, mode)
 {
-  if(mode == 1)
+  if(mode == 1) # cor
   {
     return(cor(pred, obs))
   }
-  else if(mode == 2)
+  else if(mode == 2) # bias
   {
-    #return(sum(pred-obs)/sum(pred))
     return(mean(pred-obs))
   }
 }
 
+#
 prep_results <- function(RES, dep, N_iter)
 {
   S1 = Reduce(rbind, strsplit(RES$score, ", "))[,-1]
@@ -439,10 +410,7 @@ prep_results <- function(RES, dep, N_iter)
   
   res.m1$model = relevel(factor(res.m1$model), ref = "cmb_LM")
   res.m2$model = relevel(factor(res.m2$model), ref = "cmb_LM")
-  #mod1 = lm(atanh(value) ~ pNA + model + typeNA, data = res.m1)
-  #summary(mod1)
-  #mod2 = lm(value ~ pNA + model + typeNA, data = res.m2)
-  #summary(mod2)
+  
   mod1 = tryCatch(lm(atanh(value) ~ pNA + model + typeNA, data = res.m1), error=function(e){NA})
   mod2 = tryCatch(lm(value ~ pNA + model + typeNA, data = res.m2), error=function(e){NA})
   
@@ -523,15 +491,11 @@ p_h = 0.8
 n = 200
 R2 = 0.95
 pNA = c(0.05, 0.1, 0.2, 0.3, 0.5, 0.7)
-#typeNA = c("MCAR", "MAR_L", "MAR_LR", "MAR_C", "MNAR_L", "MNAR_LR", "MNAR_C")
-#conditions = expand.grid(n, R2, pNA, typeNA)
-#colnames(conditions) = c("n", "R2", "pNA", "typeNA")
-
 conditions = expand.grid(n, R2, pNA)
 colnames(conditions) = c("n", "R2", "pNA")
-
 mu = c(2, 1, 0.2, -2, 3, 0.1, 1.4, -2, 3, 0.001)
 theta = c(0.7, -0.4, 2, 0.1, 0.5, -2, 0.5, 3, 0.8, -0.9, 0.01)
+theta2 = c(0.7, +0.4, 10, 0.1, 0.5, 2, 0.5, 3, 0.8, -0.9, 0.01)
 N_iter = 50
 
 # Independent
@@ -539,7 +503,6 @@ sigma = c(1.42, 0.82, 1.22, 2.22, 1.67, 2, 0.71, 1.8, 0.73, 1.36)
 Cov_ind = diag(sigma)
 heatmap.2(Cov_ind/(sqrt(diag(Cov_ind)) %*% t(sqrt(diag(Cov_ind)))), trace = "n", 
           breaks = seq(-1,1, length.out = 30))
-
 
 # Medium Dependency
 Cov_wd = matrix(c(1.42, -0.16, 0.32, 0.49, 0.3, 0.11, 0.24, -0.64, 0.02, -0.8,
@@ -574,8 +537,6 @@ heatmap.2(Cov_sd/(sqrt(diag(Cov_sd)) %*% t(sqrt(diag(Cov_sd)))), trace = "n",
           breaks = seq(-1, 1, length.out = 30))
 
 
-
-
 ########################## Simulation 1: independent ##########################
 start_time <- Sys.time()
 set.seed(144)
@@ -586,12 +547,6 @@ out2 = simulation(mu, Cov_wd, theta, p_h, N_iter = N_iter, conditions, "wd")
 ########################## Simulation 3: sd ##########################
 set.seed(146)
 out3 = simulation(mu, Cov_sd, theta, p_h, N_iter = N_iter, conditions, "sd")
-
-# Simulation1: Cmb-lm does better than mean/imputation because it has access to
-# the means of the Reference datasets!
-
-
-theta2 = c(0.7, +0.4, 10, 0.1, 0.5, 2, 0.5, 3, 0.8, -0.9, 0.01)
 ########################## Simulation 4: independent ##########################
 set.seed(147)
 out4 = simulation(mu, Cov_ind, theta2, p_h, N_iter = N_iter, conditions, "independent")
@@ -604,17 +559,46 @@ out6 = simulation(mu, Cov_sd, theta2, p_h, N_iter = N_iter, conditions, "sd")
 end_time <- Sys.time()
 end_time - start_time # Time difference of 2.66899 hours
 
-
 ################################## Save parameters ##################################
 
 out = list(out1 = out1,   out2 = out2,   out3 = out3, out4 = out4, out5 = out5, out6 = out6)
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round2/")
 saveRDS(out, "results_2.Rds")
 
-# capture.output(lapply(models, summary), file = "linear_models.txt")
-# saveRDS(plot, "simulation_plots.Rds")
-# saveRDS(mod, "linear_models.Rds")
+########################## Read results ##########################
 
+out = readRDS("results_2.Rds")
+# Modify plotting parameters
+sapply(1:length(out), function(x) out[[x]]$graphic$layers[[1]]$aes_params$alpha <<- 0.025)
+sapply(1:length(out), function(x) out[[x]]$graphic$layers[[2]]$aes_params <<- list(alpha = 0.2, size = 0.3, linetype = 1))
+# Capture summary of linear models
+N_iter = 50
+dependency = c('independent', 'wd', 'sd', 'independent', 'wd', 'sd')
+for(i in 1:length(out))
+{
+  message(i)
+  G = plot_results(1, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
+  ggsave(plot = G, paste('round2_simulation', i, 'g1.pdf', sep = ''))
+  ggsave(plot = G, paste('round2_simulation', i, 'g1.tiff', sep = ''), dpi = 300)
+  
+  G = plot_results(2, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
+  ggsave(plot = G, paste('round2_simulation', i, 'g2.pdf', sep = ''))
+  ggsave(plot = G, paste('round2_simulation', i, 'g2.tiff', sep = ''), dpi = 300)
+  
+  G = plot_results(3, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
+  ggsave(plot = G, paste('round2_simulation', i, 'g3.pdf', sep = ''))
+  ggsave(plot = G, paste('round2_simulation', i, 'g3.tiff', sep = ''), dpi = 300)
+  
+  G = plot_results(4, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
+  ggsave(plot = G, paste('round2_simulation', i, 'g4.pdf', sep = ''))
+  ggsave(plot = G, paste('round2_simulation', i, 'g4.tiff', sep = ''), dpi = 300)
+  
+  capture.output(print(paste('############################## Simulation', i, '##############################')), 
+                 file = 'linear_models.txt', append = T)
+  capture.output(print('ATANH(COR)'), file = 'linear_models.txt', append = T)
+  capture.output(summary(out[[i]]$mod$mod1), file = 'linear_models.txt', append = T)
+  capture.output(print('BIAS'), file = 'linear_models.txt', append = T)
+  capture.output(summary(out[[i]]$mod$mod2), file = 'linear_models.txt', append = T)
+}
 
 ################################## Session Info ##################################
 
@@ -675,47 +659,3 @@ sessionInfo()
 # [129] quadprog_1.5-8              grid_4.1.2                  tidyr_1.1.4                 base64_2.0                 
 # [133] minqa_1.2.4                 DelayedMatrixStats_1.14.3   illuminaio_0.34.0           MatrixGenerics_1.4.3       
 # [137] Biobase_2.52.0              restfulr_0.0.13    
-########################## Read results ##########################
-
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round2/")
-out = readRDS("results_2.Rds")
-
-
-
-
-sapply(1:length(out), function(x) out[[x]]$graphic$layers[[1]]$aes_params$alpha <<- 0.025)
-sapply(1:length(out), function(x) out[[x]]$graphic$layers[[2]]$aes_params <<- list(alpha = 0.2, size = 0.3, linetype = 1))
-
-
-
-
-
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/')
-N_iter = 50
-dependency = c('independent', 'wd', 'sd', 'independent', 'wd', 'sd')
-for(i in 1:length(out))
-{
-  message(i)
-  G = plot_results(1, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
-  ggsave(plot = G, paste('round2_simulation', i, 'g1.pdf', sep = ''))
-  ggsave(plot = G, paste('round2_simulation', i, 'g1.tiff', sep = ''), dpi = 300)
-  
-  G = plot_results(2, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
-  ggsave(plot = G, paste('round2_simulation', i, 'g2.pdf', sep = ''))
-  ggsave(plot = G, paste('round2_simulation', i, 'g2.tiff', sep = ''), dpi = 300)
-  
-  G = plot_results(3, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
-  ggsave(plot = G, paste('round2_simulation', i, 'g3.pdf', sep = ''))
-  ggsave(plot = G, paste('round2_simulation', i, 'g3.tiff', sep = ''), dpi = 300)
-  
-  G = plot_results(4, out[[i]]$res.m$res.m1, out[[i]]$res.m$res.m2, N_iter, dependency[i])
-  ggsave(plot = G, paste('round2_simulation', i, 'g4.pdf', sep = ''))
-  ggsave(plot = G, paste('round2_simulation', i, 'g4.tiff', sep = ''), dpi = 300)
-  
-  capture.output(print(paste('############################## Simulation', i, '##############################')), 
-                 file = 'linear_models.txt', append = T)
-  capture.output(print('ATANH(COR)'), file = 'linear_models.txt', append = T)
-  capture.output(summary(out[[i]]$mod$mod1), file = 'linear_models.txt', append = T)
-  capture.output(print('BIAS'), file = 'linear_models.txt', append = T)
-  capture.output(summary(out[[i]]$mod$mod2), file = 'linear_models.txt', append = T)
-}

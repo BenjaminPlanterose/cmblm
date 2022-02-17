@@ -72,7 +72,7 @@ Qty; (n-1)*ginv(t(R)) %*% sapply(1:ncol(X_), function(x) cov(X_[,x], y)) + c(R[1
 
 # Extracting covariance between X_,j and y from R and theta_ols
 sapply(1:ncol(X_), function(x) cov(X_[,x], y))
-1/(n-1)*(t(R) %*% R %*% theta_ols - t(R) %*% c(R[1,] %*% theta_ols, rep(0,m)))
+round(1/(n-1)*(t(R) %*% R %*% theta_ols - t(R) %*% c(R[1,] %*% theta_ols, rep(0,m))), 10)
 
 # Cmb-lm estimates
 omega = c(2,4,7); omega_c = (1:(m+1))[!(1:(m+1) %in% omega)]
@@ -171,7 +171,3 @@ t(y-X_ %*% theta_ols) %*% (y-X_ %*% theta_ols)/n
 
 t(y-X_ %*% theta_ridge) %*% (y-X_ %*% theta_ridge)/n
 (t(y) %*% y + t(theta_ridge) %*% t(R_l) %*% R_l %*% theta_ridge -2* t(theta_ols) %*% t(R) %*% R %*% theta_ols + 2*lambda*t(theta_ols[-1]) %*% theta_ridge[-1]- lambda*norm(theta_ridge[-1], "2")^2)/n
-
-
-
-

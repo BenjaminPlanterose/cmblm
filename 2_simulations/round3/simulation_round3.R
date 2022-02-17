@@ -19,13 +19,10 @@ library(gplots)
 library(mice)
 library(gtools)
 library(matrixStats)
-#library(imputeMissings)
 library(ggplot2)
 library(reshape)
 library(Matrix)
 library(fastmatrix)
-
-
 
 # Load functions
 # Global simulation wrapper
@@ -47,8 +44,6 @@ simulation <- function(mu, Cov, theta, p_h, typeNA, subtype, N_iter, conditions,
     }
     conditions[i, 4:ncol(conditions)] = sapply(1:ncol(res), function(x) paste(round(res[,x], 3), collapse = ", "))
   }
-  
-  #return(conditions)
   return(prep_results(conditions, typeNA, subtype, dep, N_iter))
 }
 
@@ -120,7 +115,6 @@ inject.NA <- function(data, p, type, subtype = NULL)
 MCAR <- function(X, p)
 {
   n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   k = 0:(m-1)
   probs = choose(m, k)*p^k*(1-p)^(m-k)/(1-p^m)
   n_missing = sample(k, n, replace = T, prob = probs)
@@ -136,7 +130,6 @@ MCAR <- function(X, p)
 MNAR <- function(X, p, subtype)
 {
   x = as.numeric(X); n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   if(subtype == "R")
   {
     k = uniroot(f = function(k) mean(logistic(x + k)) - p, interval = c(-50, 50))$root
@@ -157,7 +150,6 @@ MNAR <- function(X, p, subtype)
     k = uniroot(f = function(k) mean(1 - logistic(abs(x) + k)) - p, interval = c(-50, 50))$root
     A = as.numeric(1 - logistic(abs(X) + k))
   }
-  #print(k)
   res = matrix(sapply(1:length(A), function(x) sample(c(1,0), size = 1, prob = c(A[x], 1 - A[x]))), nrow(X), ncol(X))
   
   # Rescue pattern - all missing values
@@ -182,7 +174,6 @@ rescue_pattern <- function(res, A, S)
   for(i in 1:length(S))
   {
     probs = sapply(1:nrow(pattern), function(x) sum(log(A[S[i],]^pattern[x,]*(1-A[S[i],])^(1 - pattern[x,]))))
-    #probs = exp(probs - min(probs))
     probs = exp(probs)
     probs = probs/sum(probs)
     res[S[i],] = pattern[sample(1:nrow(pattern), 1, prob = probs),]
@@ -194,7 +185,6 @@ rescue_pattern <- function(res, A, S)
 MAR <- function(X, p, subtype)
 {
   n = nrow(X); m = ncol(X)
-  #message(paste("pNA_max is", 1-1/m))
   X_mut = matrix(NA, nrow(X), ncol(X))
   for(j in 1:ncol(X)) # Cyclic permutation
   {
@@ -234,24 +224,6 @@ test_full <- function(data)
 }
 
 # Test mean-mode
-test_mean_mode0 <- function(data)
-{
-  df = as.data.frame(data$ref$X)
-  df$y = data$ref$y
-  lm_mod = lm(formula = y ~ ., data = df)
-  
-  X_impute = data$app$X
-  I = is.na(X_impute)
-  NA_count = colSums(I)
-  means = colMeans(data$ref$X) # population means from the reference dataset
-  u = sapply(1:length(means), function(x) rep(means[x], NA_count[x]))
-  u = unlist(u)
-  X_impute[I] = u
-  
-  y_pred = predict(lm_mod, as.data.frame(X_impute))
-  metric(y_pred, data$app0$y)
-}
-
 test_mean_mode <- function(data)
 {
   df = as.data.frame(data$ref$X)
@@ -261,7 +233,7 @@ test_mean_mode <- function(data)
   X_impute = data$app$X
   I = is.na(X_impute)
   NA_count = colSums(I)
-  means = colMeans(data$app$X, na.rm = T) # population means from the reference dataset
+  means = colMeans(data$app$X, na.rm = T) # population means from the application dataset
   u = sapply(1:length(means), function(x) rep(means[x], NA_count[x]))
   u = unlist(u)
   X_impute[I] = u
@@ -276,7 +248,7 @@ test_mice <- function(data)
   df = as.data.frame(data$ref$X)
   df$y = data$ref$y
   lm_mod = lm(formula = y ~ ., data = df)
-  mice_out = mice(data$app$X, m = 1, printFlag = F, method = "pmm", remove.collinear = F) # in Iris maxit=50
+  mice_out = mice(data$app$X, m = 1, printFlag = F, method = "pmm", remove.collinear = F)
   data$app$X = complete(mice_out, 1)
   y_pred = predict(lm_mod, as.data.frame(data$app$X))
   metric(y_pred, data$app0$y)
@@ -299,41 +271,21 @@ test_cmb_lm <- function(data)
   metric(y_pred, data$app0$y)
 }
 
+#
 theta_omega <- function(XtX, omega_c)
 {
   m = nrow(XtX)-2
   sweep.operator(XtX, k = omega_c)[omega_c,m+2]
 }
 
-
-# Test cmb-lm (deprecated)
-test_cmb_lm0 <- function(data)
-{
-  create_Ip <- function(p)
-  {
-    diag(length(p))[, !p]
-  }
-  
-  X_ = cbind(1, data$ref$X)
-  QR = qr(X_)
-  R = qr.R(QR, complete = F)
-  theta = ginv(X_) %*% data$ref$y
-  Qt_y = R %*% theta
-  X_t = cbind(1, data$app$X)
-  Indicator = is.na(X_t)
-  I_list = lapply(1:nrow(Indicator), function(x) create_Ip(Indicator[x,]))
-  y_pred = sapply(1:nrow(X_t), function(x) na.omit(X_t[x,]) %*% ginv(R %*% I_list[[x]]) %*% Qt_y)
-  metric(y_pred, data$app0$y)
-}
-
+#
 metric <- function(pred, obs)
 {
   rho = cor(pred, obs)
-  #atanh(rho)
   rho
 }
 
-
+#
 prep_results <- function(RES, typeNA, subtype, dep, N_iter)
 {
   full = Reduce(rbind, strsplit(RES$`mu:full`, ", "))
@@ -361,21 +313,15 @@ prep_results <- function(RES, typeNA, subtype, dep, N_iter)
                   sep = "")) +
     ylab("cor^2(y_hat, y)") + ylim(c(0,1))
   res.m$variable = relevel(factor(res.m$variable), ref = "cmbLM")
-  #mod1 = lm(atanh(value) ~ n + R2 + pNA + variable, data = res.m)
   mod1 = tryCatch(lm(atanh(value) ~ n + R2 + pNA + variable, data = res.m), error=function(e){NA})
-  #print(summary(mod1))
-  #print(g1)
   return(list(graphic = g1, mod = mod1, res.m = res.m))
 }
-
 
 
 ########################## Define Parameters ##########################
 
 m = 10
 p_h = 0.8
-#n = 200
-#R2 = 0.95
 n_min = ceiling((m+1)/p_h)
 n = seq(100, 500, 50)
 R2 = c(0.7, 0.95)
@@ -385,12 +331,6 @@ colnames(conditions) = c("n", "R2", "pNA")
 mu = c(2, 1, 0.2, -2, 3, 0.1, 1.4, -2, 3, 0.001)
 theta = c(0.7, -0.4, 2, 0.1, 0.5, -2, 0.5, 3, 0.8, -0.9, 0.01)
 N_iter = 50
-
-# Independent
-# sigma = c(1.42, 0.82, 1.22, 2.22, 1.67, 2, 0.71, 1.8, 0.73, 1.36)
-# Cov_ind = diag(sigma)
-# heatmap.2(Cov_ind/(sqrt(diag(Cov_ind)) %*% t(sqrt(diag(Cov_ind)))), trace = "n", 
-#           breaks = seq(-1,1, length.out = 30))
 
 # Medium Dependency
 Cov_wd = matrix(c(1.42, -0.16, 0.32, 0.49, 0.3, 0.11, 0.24, -0.64, 0.02, -0.8,
@@ -425,7 +365,6 @@ heatmap.2(Cov_sd/(sqrt(diag(Cov_sd)) %*% t(sqrt(diag(Cov_sd)))), trace = "n",
           breaks = seq(-1, 1, length.out = 30))
 
 ########################## Estimate correlation matrix after transform ##########################
-
 
 # Chi^2
 set.seed(1)
@@ -494,21 +433,24 @@ out6 = simulation(mu = mu, Cov = Cov_sd, theta = theta, p_h = p_h, N_iter = N_it
 end_time <- Sys.time()
 end_time - start_time # Time difference of 1.799228 hours
 
-
 ################################## Save parameters ##################################
 
 out = list(out1 = out1,   out2 = out2,   out3 = out3,   out4 = out4,   out5 = out5, out6 = out6)
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round3/")
 saveRDS(out, "results_3.Rds")
 
-# capture.output(lapply(models, summary), file = "linear_models.txt")
-# saveRDS(plot, "simulation_plots.Rds")
-# saveRDS(mod, "linear_models.Rds")
+########################## Read results ##########################
 
-
-# setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round3/")
-# out = readRDS('results_3.Rds')
-
+out = readRDS("results_3.Rds")
+# Capture output of linear models
+for(i in 1:length(out))
+{
+  message(i)
+  ggsave(plot = out[[i]]$graphic, paste('round3_simulation', i, '.pdf', sep = ''))
+  ggsave(plot = out[[i]]$graphic, paste('round3_simulation', i, '.tiff', sep = ''), dpi = 300)
+  capture.output(print(paste('############################## Simulation', i, '##############################')), 
+                 file = 'linear_models.txt', append = T)
+  capture.output(summary(out[[i]]$mod), file = 'linear_models.txt', append = T)
+}
 
 ################################## Session Info ##################################
 
@@ -569,36 +511,3 @@ sessionInfo()
 # [129] quadprog_1.5-8              grid_4.1.2                  tidyr_1.1.4                 base64_2.0                 
 # [133] minqa_1.2.4                 DelayedMatrixStats_1.14.3   illuminaio_0.34.0           MatrixGenerics_1.4.3       
 # [137] Biobase_2.52.0              restfulr_0.0.13    
-
-########################## Read results ##########################
-
-setwd("/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/round3/")
-out = readRDS("results_3.Rds")
-
-out$out1$graphic
-out$out2$graphic
-out$out3$graphic
-out$out4$graphic
-out$out5$graphic
-out$out6$graphic
-
-
-# sapply(1:length(out), function(x) out[[x]]$graphic$layers[[1]]$aes_params$alpha <<- 0.025)
-# sapply(1:length(out), function(x) out[[x]]$graphic$layers[[2]]$aes_params <<- list(alpha = 0.2, size = 0.3, linetype = 1))
-
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/0_simulations/results/')
-for(i in 1:length(out))
-{
-  message(i)
-  ggsave(plot = out[[i]]$graphic, paste('round3_simulation', i, '.pdf', sep = ''))
-  ggsave(plot = out[[i]]$graphic, paste('round3_simulation', i, '.tiff', sep = ''), dpi = 300)
-  capture.output(print(paste('############################## Simulation', i, '##############################')), 
-                 file = 'linear_models.txt', append = T)
-  capture.output(summary(out[[i]]$mod), file = 'linear_models.txt', append = T)
-}
-
-
-
-
-
-

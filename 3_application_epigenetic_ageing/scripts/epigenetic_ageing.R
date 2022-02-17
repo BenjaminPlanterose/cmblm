@@ -1,4 +1,18 @@
+############################################################################
+############################################################################
+###########                                                      ###########
+###########            Application: Epigenetic ageing            ###########
+###########             Author: Benjamin Planterose              ###########
+###########                                                      ###########
+###########        Erasmus MC University Medical Centre          ###########
+###########               Rotterdam, The Netherlands             ###########
+###########                                                      ###########
+###########           b.planterosejimenez@erasmusmc.nl           ###########
+###########                                                      ###########
+############################################################################
+############################################################################
 
+# Load libraries
 library(data.table)
 library(MASS)
 library(RColorBrewer)
@@ -6,7 +20,16 @@ library(ggplot2)
 library(reshape2)
 library(wateRmelon)
 library(fastmatrix)
+library(mice)
+library(tidyverse)
+library(miceadds)
+library(micemd)
+library(glmnet)
+library(penalized)
+library(gplots)
 
+# Load functions
+# Perform mean imputation
 mean_impute <- function(data)
 {
   mu = colMeans(data, na.rm = T)
@@ -16,25 +39,28 @@ mean_impute <- function(data)
   }
   return(data)
 }
+
+# Horvarth transform
 transform <- function(age, age_adult = 20)
 {
   (age <= age_adult)*log((age+1)/(age_adult + 1)) + (age > age_adult)*(age-age_adult)/(age_adult+1)
 }
+
+# Inverse Horvath transform
 inverse_transform <- function(age_trans, age_adult = 20)
 {
   (age_trans <= 0)*(exp(age_trans)*(age_adult + 1)-1) + (age_trans > 0)*(age_trans*(age_adult+1) + age_adult)
 }
 
-
-
-
+# theta_omega, sweep operator version
 theta_omega <- function(XtX, omega_c)
 {
   m = nrow(XtX)-2
   sweep.operator(XtX, k = omega_c)[omega_c,m+2]
 }
 
-cmb_lm <- function(R, theta, X_app, yty) # CHANGE ORDER!!!! params first
+# cmb-lm prediction modelling
+cmb_lm <- function(R, theta, X_app, yty)
 {
   m = length(theta)-1
   XtX = rbind(cbind(t(R) %*% R, t(R) %*% R %*% theta), c(t(R) %*% R %*% theta, yty))
@@ -43,7 +69,9 @@ cmb_lm <- function(R, theta, X_app, yty) # CHANGE ORDER!!!! params first
   y_pred = sapply(1:nrow(X_), function(x) na.omit(X_[x,]) %*% theta_omega(XtX, omegaC_list[[x]]))
   y_pred
 }
-par_cmb_lm <- function(R, theta, X_app, nThread = NULL, yty) # # CHANGE ORDER!!!! params first
+
+# cmb-lm prediction modelling (parallelized version)
+par_cmb_lm <- function(R, theta, X_app, nThread = NULL, yty)
 {
   pred <- function(x, XtX, omega_c)
   {
@@ -64,53 +92,7 @@ par_cmb_lm <- function(R, theta, X_app, nThread = NULL, yty) # # CHANGE ORDER!!!
   return(y_pred)
 }
 
-
-
-
-
-cmb_lm0 <- function(R, theta, X_app)
-{
-  create_Ip <- function(p)
-  {
-    diag(length(p))[, !p]
-  }
-  
-  Qt_y = R %*% theta
-  Indicator = is.na(X_app)
-  I_list = lapply(1:nrow(Indicator), function(x) create_Ip(Indicator[x,]))
-  y_pred = sapply(1:nrow(X_app), function(x) na.omit(X_app[x,]) %*% ginv(R %*% I_list[[x]]) %*% Qt_y)
-  y_pred
-}
-par_cmb_lm0 <- function(R, theta, X_app, nThread = NULL)
-{
-  create_Ip <- function(p)
-  {
-    diag(length(p))[, !p]
-  }
-  
-  pred <- function(x, R, I, Qt_y)
-  {
-    na.omit(x) %*% ginv(R %*% I) %*% Qt_y
-  }
-  if(is.null(nThread))
-  {
-    nThread <- detectCores(logical = FALSE)
-  }
-  Qt_y = R %*% theta
-  Indicator = is.na(X_app)
-  I_list = lapply(1:nrow(Indicator), function(x) create_Ip(Indicator[x,]))
-  
-  y_pred = parallel::mclapply(1:nrow(X_app), 
-                              function(x) pred(X_app[x,], R, I_list[[x]], Qt_y), 
-                              mc.cores = nThread)
-  y_pred = unlist(y_pred)
-  return(y_pred)
-}
-
-
-
-
-
+# Transform cmb-lm model into cmb-ridge model
 regularize_L2_model <- function(lambda, model)
 {
   I = diag(length(model$theta_ols)); I[1,1] = 0
@@ -119,26 +101,7 @@ regularize_L2_model <- function(lambda, model)
   return(list(R = R_m, theta_ols = as.numeric(theta_ridge), yTy = model$yTy, lambda = lambda))
 }
 
-test_cmblm_impute <- function(model, X, y)
-{
-  # Mice imputation
-  # mice_out = mice(X, m = 1, printFlag = F, method = "pmm", remove.collinear = F)
-  # X_impute2 = complete(mice_out, 1)
-  # y_h = inverse_transform(X_impute2 %*% model$theta_ols)
-  # cor_MICE = tryCatch(cor(y_h, y, use = 'complete.obs'), error = function(e) NA)
-  
-  # mean-imputation
-  X_impute = mean_impute(X)
-  y_h = inverse_transform(X_impute %*% model$theta_ols)
-  cor_impute = tryCatch(cor(y_h, y, use = 'complete.obs'), error = function(e) NA)
-  
-  # Cmb-lm
-  y_h = inverse_transform(par_cmb_lm(R = model$R, theta = model$theta_ols, yty = model$yTy, X_app = X, nThread = 4))
-  cor_cmblm = cor(y_h, y)
-  
-  #return(c(cor_impute = cor_impute, cor_MICE = cor_MICE, cor_cmblm = cor_cmblm))
-  return(c(cor_impute = cor_impute, cor_cmblm = cor_cmblm))
-}
+# Inject missing values (MCAR scheme)
 inject.na = function(X, pNA)
 {
   p0 = mean(is.na(X))
@@ -156,20 +119,29 @@ inject.na = function(X, pNA)
   dim(x) = DIM
   return(x)
 }
-injection_assay <- function(model, X, y, p_vec, N_iter)
+
+# Testing cmblm and mean-imputation (correlation mode); MICE was too inefficient for this stage
+test_cmblm_impute <- function(model, X, y)
 {
-  replicate(n = N_iter, expr = {
-    sapply(1:length(p_vec), function(x) test_cmblm_impute(model, inject.na(X, p_vec[x]), y))
-  })
+  # Mice imputation
+  # mice_out = mice(X, m = 1, printFlag = F, method = "pmm", remove.collinear = F)
+  # X_impute2 = complete(mice_out, 1)
+  # y_h = inverse_transform(X_impute2 %*% model$theta_ols)
+  # cor_MICE = tryCatch(cor(y_h, y, use = 'complete.obs'), error = function(e) NA)
+  
+  # mean-imputation
+  X_impute = mean_impute(X)
+  y_h = inverse_transform(X_impute %*% model$theta_ols)
+  cor_impute = tryCatch(cor(y_h, y, use = 'complete.obs'), error = function(e) NA)
+  
+  # Cmb-lm
+  y_h = inverse_transform(par_cmb_lm(R = model$R, theta = model$theta_ols, yty = model$yTy, X_app = X, nThread = 4))
+  cor_cmblm = cor(y_h, y)
+  
+  return(c(cor_impute = cor_impute, cor_cmblm = cor_cmblm))
 }
 
-injection_assay2 <- function(model, X, y, p_vec, N_iter)
-{
-  replicate(n = N_iter, expr = {
-    sapply(1:length(p_vec), function(x) test_cmblm_impute2(model, inject.na(X, p_vec[x]), y))
-  })
-}
-
+# Testing cmblm and mean-imputation (bias mode); MICE was too inefficient for this stage
 test_cmblm_impute2 <- function(model, X, y)
 {
   # Mice imputation
@@ -186,22 +158,34 @@ test_cmblm_impute2 <- function(model, X, y)
   # Cmb-lm
   y_h = inverse_transform(par_cmb_lm(R = model$R, theta = model$theta_ols, yty = model$yTy, X_app = X, nThread = 4))
   bias_cmblm = mean(y_h - y)
-  
-  #return(c(cor_impute = cor_impute, cor_MICE = cor_MICE, cor_cmblm = cor_cmblm))
   return(c(bias_impute = bias_impute, bias_cmblm = bias_cmblm))
 }
 
-############################### Example 1: Horvath model ###############################
+# Wrapper for missing value titration assay (correlation mode)
+injection_assay <- function(model, X, y, p_vec, N_iter)
+{
+  replicate(n = N_iter, expr = {
+    sapply(1:length(p_vec), function(x) test_cmblm_impute(model, inject.na(X, p_vec[x]), y)) # correlation mode
+  })
+}
+
+# Wrapper for missing value titration assay (bias mode)
+injection_assay2 <- function(model, X, y, p_vec, N_iter)
+{
+  replicate(n = N_iter, expr = {
+    sapply(1:length(p_vec), function(x) test_cmblm_impute2(model, inject.na(X, p_vec[x]), y)) # Bias mode
+  })
+}
+
+############################### Section 1: Model building ###############################
 
 # Read phenotype and DNA methylation data from EWAS Data Hub
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/EWAS_datahub/')
 pheno = fread('age_methylation_v1.txt', nThread = 4, sep = '\t', nrows = 2)
 age = as.numeric(pheno[1,-1])
 names(age) = colnames(pheno)[-1]
 tissue = as.character(pheno[2,-1])
 names(tissue) = colnames(pheno)[-1]
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/EWAS_datahub/')
-data = fread('horvath_age_methylation_v1.txt', nThread = 4, sep = '\t')
+data = fread('horvath_age_methylation_v1.txt', nThread = 4, sep = '\t') # Horvath CpGs
 CpGs = data$V1
 data = as.matrix(data[,-1])
 rownames(data) = CpGs
@@ -219,29 +203,12 @@ train_y = transform(age[colnames(data)[train_samples]])
 test_set = cbind(1, t(data[, test_samples]))
 test_y = transform(age[colnames(data)[test_samples]])
 
-mean(is.na(train_set))
-mean(is.na(test_set))
-barplot(colMeans(is.na(test_set)), ylim = c(0,1))
-
-
 ######## Model 1: NA-robust statistical inference
 
-#library(misaem)
-library(mice)
-library(tidyverse)
-library(miceadds)
-library(micemd)
-
-
-# df = as.data.frame(cbind(y = train_y, train_set[,-1]))
-# mod = miss.lm(y ~ ., data = df, control = list(maxruns = 500, tol_em = 1e-07, print_iter = TRUE))
-#df = as.data.frame(cbind(y = train_y, train_set[,-1]))
 df = as.data.frame(cbind(y = train_y, train_set[,-1]))
 mod = micemd::mice.par(df, m = 5, maxit = 5, method = 'pmm', seed = 500, nnodes = 4) # Very intensive and slow!
 Mu = rowMeans(sapply(1:5, function(x) colMeans(complete(mod, x))))[-1]
 Mu = c(1, Mu)
-# Cov = lapply(1:5, function(x) cov(complete(mod, x))[-1,-1])
-# p_Cov = Reduce(`+`, Cov)/5
 Cov = micombine.cov(mod) # This function applies Rubin's rule to combine results from different imputations
 Cov = attr(Cov, 'cov_matrix')[-1, -1]
 Cov[1:5, 1:5]; cov(complete(mod, 1))[2:6, 2:6]; cov(complete(mod, 2))[2:6, 2:6]
@@ -253,7 +220,6 @@ n = nrow(train_set)
 R = chol((n-1)*Cov + n*Mu %*% t(Mu))
 model1 = list(R = R, theta_ols = theta_ols, yTy = t(train_y) %*% train_y)
 data(coef); plot(model1$theta_ols, coef[c('(Intercept)', colnames(train_set)[-1])])
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 saveRDS(model1, 'model1_MICEpooling.Rds')
 rm(R, theta_ols)
 
@@ -266,14 +232,11 @@ R = qr.R(QR)
 theta_ols = backsolve(r = R, x = t(Q) %*% train_y)
 model2 = list(R = R, theta_ols = theta_ols, yTy = t(train_y) %*% train_y)
 plot(model2$theta_ols, coef[c('(Intercept)', colnames(train_set)[-1])])
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 saveRDS(model2, 'model2_meanImpute.Rds')
 rm(R, theta_ols)
 
 ######## Regularization
 
-library(glmnet)
-library(penalized)
 # glmnet can be confusing to interpret coefficients as it standarizes y and transforms lambda.
 # But it has a very efficient implementation of CV. So it is worth employing and translating.
 # Analytical solution
@@ -300,14 +263,11 @@ lambda = lambda.min*n/sd_y
 I = diag(ncol(train_set)); I[1,1] = 0
 reg_mod3 = solve(t(train_set_imputed) %*% train_set_imputed + lambda*I) %*% t(train_set_imputed) %*% train_y
 plot(cofs, reg_mod3); abline(0, 1, lty = 2)
-FIT = glmnet(x = train_set_imputed[,-1], y = train_y, alpha = 0, thresh = 1e-20)
-plot(FIT)
-
+FIT = glmnet(x = train_set_imputed[,-1], y = train_y, alpha = 0, thresh = 1e-20); plot(FIT)
 
 # Building regularized models
 model3 = regularize_L2_model(lambda, model1)
 model4 = regularize_L2_model(lambda, model2)
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 saveRDS(model3, 'model3_MICEpooling_L2reg.Rds')
 saveRDS(model4, 'model4_meanImpute_L2reg.Rds')
 
@@ -322,51 +282,27 @@ for(i in 1:length(l_vec))
   cor_vec[i] = cor(y_h, inverse_transform(train_y))
   print(i/length(l_vec))
 }
-
 plot(l_vec, cor_vec^2, ylim = c(0,1), type = 'l')
-
-barplot(modeli$theta_ols)
-
-plot(density(y_h))
-
-
-###
-
 
 #####################################################################################################
 
-
 ######## Read Models
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 model1 = readRDS('model1_MICEpooling.Rds')
 model2 = readRDS('model2_meanImpute.Rds')
 model3 = readRDS('model3_MICEpooling_L2reg.Rds')
 model4 = readRDS('model4_meanImpute_L2reg.Rds')
 
-
-######## Model Comparison
-
-library(gplots)
+######## Model Comparison (QC)
 TH = Reduce(cbind, list(model1$theta_ols, model2$theta_ols, model3$theta_ols, model4$theta_ols))
 colnames(TH) = paste('mod', 1:4)
 heatmap.2(TH, trace = 'n')
-
 plot(model1$theta_ols, model2$theta_ols); abline(0,1, lty = 2)
 plot(abs(model1$R), abs(model2$R)); abline(0,1, lty = 2) # Abs because of chol-multiplicity
-
 plot(model1$theta_ols, model3$theta_ols); abline(0,1, lty = 2)
 plot(abs(model1$R), abs(model3$R)); abline(0,1, lty = 2) # Abs because of chol-multiplicity
 plot(model2$theta_ols, model4$theta_ols); abline(0,1, lty = 2)
 plot(abs(model2$R), abs(model4$R)); abline(0,1, lty = 2) # Abs because of chol-multiplicity
 plot(model3$theta_ols, model4$theta_ols); abline(0,1, lty = 2)
-
-# test_set_imputed = mean_impute(test_set)
-# cor(mod$coefficients, theta_ols)
-# plot(inverse_transform(test_set_imputed %*% mod$coefficients), inverse_transform(test_y))
-# plot(inverse_transform(test_set_imputed %*% theta_ols), inverse_transform(test_y))
-# cor(inverse_transform(test_set_imputed %*% mod$coefficients), inverse_transform(test_y))
-# cor(inverse_transform(test_set_imputed %*% theta_ols), inverse_transform(test_y))
-
 
 ######## Testing cmb-model on testing set
 
@@ -394,31 +330,7 @@ age_pred_test = inverse_transform(y_hat_test)
 plot(age_pred_test, inverse_transform(test_y)); abline(0, 1, lty = 2)
 cor(age_pred_test, inverse_transform(test_y)) # 0.9532407
 
-# # Test on external dataset
-# setwd('/media/ultron/2tb_disk2/Papers/Genome_independent_interindividual_variation_in_dna_methylation_2/data/beta/Population/')
-# beta = fread('2019-09-10_SQN_combat_cellcomp.txt')
-# CpGs = beta$rn
-# beta = as.matrix(beta[,-(1:2)]); rownames(beta) = CpGs
-# colnames(beta) = sapply(strsplit(colnames(beta), split = '_'), function(x) x[1])
-# BETA = matrix(nrow = nrow(data), ncol = ncol(beta))
-# rownames(BETA) = rownames(data); colnames(BETA) = colnames(beta)
-# ints = intersect(rownames(beta), rownames(BETA))
-# BETA[ints, ] = beta[ints,]
-# setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/Johansson/')
-# library(GEOquery)
-# phenotype <- getGEO('GSE87571', destdir=".")
-# pheno <- phenotype[[1]]
-# pheno <- phenoData(pheno)
-# pheno <- pData(pheno)
-# pheno <- pheno[, c(1, 37:40)]
-# pheno <- pheno[colnames(BETA),]
-# AGE = as.numeric(pheno$`age:ch1`)
-# AGE_pred = inverse_transform(par_cmb_lm(model$R, model$theta_ols, cbind(1, t(BETA)), nThread = 4))
-# plot(AGE, AGE_pred)
-# cor(AGE, AGE_pred) # 0.9617895
-# rm(beta, CpGs, pheno, phenotype, BETA, AGE, AGE_pred); gc()
-
-######## Robustness to missing values
+######## Robustness to missing values (correlation mode)
 
 # Model 1
 p0 = mean(is.na(test_set))
@@ -431,7 +343,6 @@ RES.m$Var1 = sapply(strsplit(as.vector(RES.m$Var1), 'cor_'), function(x) x[2])
 colnames(RES.m) = c('method', 'pNA', 'N_iter', 'rho')
 ggplot(data=RES.m, aes(x=pNA, y=rho^2, col=method)) + 
   geom_smooth(method = 'loess', level = 0.95) + xlim(0,1) + ylim(0,1)
-
 
 # Model 2
 p0 = mean(is.na(test_set))
@@ -469,12 +380,10 @@ colnames(RES.m4) = c('method', 'pNA', 'N_iter', 'rho')
 ggplot(data=RES.m4, aes(x=pNA, y=rho^2, col=method)) + 
   geom_smooth(method = 'loess', level = 0.95) + xlim(0,1) + ylim(0,1)
 
-
 RES.m$model = 'thetaMICE_lambda=0'
 RES.m2$model = 'thetaMeanImp_lambda=0'
 RES.m3$model = 'thetaMICE_lambdaL2=53.19'
 RES.m4$model = 'thetaMeanImp_lambdaL2=53.19'
-
 RES_glob = Reduce(rbind, list(RES.m, RES.m2, RES.m3, RES.m4))
 lev = c("cmblm thetaMICE_lambda=0", "cmblm thetaMeanImp_lambda=0", "cmblm thetaMICE_lambdaL2=53.19", 
         "cmblm thetaMeanImp_lambdaL2=53.19", "impute thetaMeanImp_lambdaL2=53.19", "impute thetaMICE_lambdaL2=53.19", 
@@ -489,38 +398,21 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
   geom_point(alpha = 0.2, size = 0.7) + geom_smooth(method = 'loess', level = 0.95, size = 1, span = 0.4) +
   scale_colour_manual(values=cbPalette))
 
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 ggsave(plot = g, 'NA_injection_horvath1.pdf')
 ggsave(plot = g, 'NA_injection_horvath1.tiff', dpi = 600)
 ggsave(plot = g, 'NA_injection_horvath1_2.tiff', dpi = 600, width = 6, height = 4)
-
-
 
 ggplot(data=RES_glob, aes(x=pNA, y=rho^2, col=model)) +
   geom_smooth(method = 'loess', level = 0.95, size = 0.3) + xlim(0,1) + ylim(0,1) +
   facet_wrap( ~ method, ncol = 1) + geom_point(alpha = 0.2, size = 0.7) +
   scale_colour_manual(values=cbPalette)
-# ggplot(data=RES_glob, aes(x=pNA, y=atanh(rho), col=model)) +
-#   geom_smooth(method = 'loess', level = 0.95, size = 0.3) +
-#   facet_wrap( ~ method, ncol = 1) + geom_point(alpha = 0.2, size = 0.7) # Not particularly linear (cmb-lm at least)
 
-
-sum(is.na(RES_glob$rho)) # 0
-head(RES_glob)
 RES_glob$testing_method = RES_glob$method
 RES_glob$training_method = sapply(strsplit(RES_glob$model, split = '_'), function(x) x[1])
 RES_glob$training_method = sapply(strsplit(RES_glob$training_method, split = 'theta'), function(x) x[2])
 RES_glob$regularized = factor(sapply(strsplit(RES_glob$model, split = '_'), function(x) x[2]))
 levels(RES_glob$regularized) = c('F', 'T')
-
-#mod = lm(atanh(rho) ~ model * method + pNA, data = RES_glob)
 mod = lm(atanh(rho) ~ testing_method*regularized*training_method + pNA, data = RES_glob)
-
-head(RES_glob)
-
-
-
-
 summary(mod)
 # Residuals:
 # Min       1Q   Median       3Q      Max 
@@ -544,20 +436,12 @@ summary(mod)
 # Multiple R-squared:  0.8867,	Adjusted R-squared:  0.8861 
 # F-statistic:  1478 on 8 and 1511 DF,  p-value: < 2.2e-16
 
-
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 saveRDS(RES_glob, 'NA_injection_horvath_models.Rds')
-
-
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 RES_glob = readRDS('NA_injection_horvath_models.Rds')
-
-
 
 #########################################################################
 
-
-######## Bias to missing values
+######## Robustness to missing values (bias mode)
 
 # Model 1
 p0 = mean(is.na(test_set))
@@ -607,12 +491,10 @@ colnames(RES.m8) = c('method', 'pNA', 'N_iter', 'bias')
 ggplot(data=RES.m8, aes(x=pNA, y=bias, col=method)) + 
   geom_smooth(method = 'loess', level = 0.95)
 
-
 RES.m5$model = 'thetaMICE_lambda=0'
 RES.m6$model = 'thetaMeanImp_lambda=0'
 RES.m7$model = 'thetaMICE_lambdaL2=53.19'
 RES.m8$model = 'thetaMeanImp_lambdaL2=53.19'
-
 RES_glob = Reduce(rbind, list(RES.m5, RES.m6, RES.m7, RES.m8))
 lev = c("cmblm thetaMICE_lambda=0", "cmblm thetaMeanImp_lambda=0", "cmblm thetaMICE_lambdaL2=53.19", 
         "cmblm thetaMeanImp_lambdaL2=53.19", "impute thetaMeanImp_lambdaL2=53.19", "impute thetaMICE_lambdaL2=53.19", 
@@ -627,19 +509,11 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
     geom_point(alpha = 0.2, size = 0.7) + geom_smooth(method = 'loess', level = 0.95, size = 1, span = 0.4, alpha = 0.3) +
     scale_colour_manual(values=cbPalette))
 
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 ggsave(plot = g, 'NA_injection_horvath1_bias.pdf')
 ggsave(plot = g, 'NA_injection_horvath1_bias.tiff', dpi = 600)
 ggsave(plot = g, 'NA_injection_horvath1_2_bias.tiff', dpi = 600, width = 6, height = 4)
-
-
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 saveRDS(RES_glob, 'NA_injection_horvath_models_bias.Rds')
-
-setwd('/media/ultron/2tb_disk2/0_startallover/CMB_LM/DNA_meth/MODELS/')
 RES_glob = readRDS('NA_injection_horvath_models_bias.Rds')
-
-
 
 RES_glob$testing_method = RES_glob$method
 RES_glob$training_method = sapply(strsplit(RES_glob$model, split = '_'), function(x) x[1])
@@ -669,30 +543,6 @@ summary(mod)
 # Residual standard error: 0.5179 on 1511 degrees of freedom
 # Multiple R-squared:  0.4859,	Adjusted R-squared:  0.4832 
 # F-statistic: 178.5 on 8 and 1511 DF,  p-value: < 2.2e-16
-
-
-
-
-
-#########################################################################
-
-# Sources of bias
-# 1. Differences in y_mean between training and testing set.
-# 2. Transformation.
-mean(inverse_transform(train_set_imputed %*% model1$theta_ols)) - mean(inverse_transform(train_y))
-mean(inverse_transform(train_set_imputed %*% model2$theta_ols)) - mean(inverse_transform(train_y))
-mean(inverse_transform(train_set_imputed %*% model3$theta_ols)) - mean(inverse_transform(train_y))
-mean(inverse_transform(train_set_imputed %*% model4$theta_ols)) - mean(inverse_transform(train_y))
-
-
-inverse_transform(colMeans(test_set, na.rm = T) %*% model1$theta_ols) - inverse_transform(colMeans(train_set, na.rm = T) %*% model1$theta_ols)
-inverse_transform(colMeans(test_set, na.rm = T) %*% model2$theta_ols) - inverse_transform(colMeans(train_set, na.rm = T) %*% model2$theta_ols)
-inverse_transform(colMeans(test_set, na.rm = T) %*% model3$theta_ols) - inverse_transform(colMeans(train_set, na.rm = T) %*% model3$theta_ols)
-inverse_transform(colMeans(test_set, na.rm = T) %*% model4$theta_ols) - inverse_transform(colMeans(train_set, na.rm = T) %*% model4$theta_ols)
-
-
-plot(model1$theta_ols, model2$theta_ols)
-
 
 #########################################################################
 
@@ -773,87 +623,3 @@ sessionInfo()
 # [113] KEGGREST_1.32.0           fastmap_1.1.0             httr_1.4.2                glue_1.5.0               
 # [117] png_0.1-7                 bit_4.0.4                 stringi_1.7.5             HDF5Array_1.20.0         
 # [121] blob_1.2.2                caTools_1.18.2            mixmeta_1.2.0             memoise_2.0.0 
-
-
-#
-data(coef)
-head(sort(abs(coef), decreasing = T))
-plot(age, data['cg06493994',])
-
-plot(age, data['cg22736354',])
-
-library(ggplot2)
-df = data.frame(x = age, y = data['cg22736354',], tissue = tissue)
-ggplot(data = df, mapping = aes(x = x, y = y)) + geom_jitter() + geom_smooth(method = 'loess', span = 10) +
-  facet_wrap(~ tissue)
-
-df = data.frame(x = age, y = data['cg06493994',], tissue = tissue)
-ggplot(data = df, mapping = aes(x = x, y = y)) + geom_jitter() + geom_smooth(method = 'loess', span = 10) +
-  facet_wrap(~ tissue)
-
-annot = getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
-annot['cg22736354',]
-#  chr6  18122719 
-
-sort(coef)[3]
-which.min(coef)
-df = data.frame(x = age, y = data['cg19761273',], tissue = tissue)
-ggplot(data = df, mapping = aes(x = x, y = y)) + geom_jitter() + geom_smooth(method = 'loess', span = 10) +
-  facet_wrap(~ tissue)
-annot['cg19761273',]
-# chr17  80232096 
-
-
-df = data.frame(x = age[tissue == 'whole blood'], y = data['cg19761273',tissue == 'whole blood'])
-mod = loess(df$y ~ df$x, span = 2)
-plot(df$x, df$y); lines(sort(unique(df$x)), predict(mod, sort(unique(df$x))), col = 'red2') 
-df$y2 = predict(mod)
-df = df[order(df$x),]
-df2 = data.frame(x = unique(df$x), y = unique(df$y2))
-deriv1 = diff(df2$y)/diff(df2$x)
-plot(df2$x[-1], deriv1)
-
-
-spl <- smooth.spline(df$x, y=df$y, spar = 1.2)
-pred <- predict(spl)
-plot (df$x, df$y); lines(pred, col=2)
-pred.prime <- predict(spl, deriv=1)
-plot(pred.prime$x, pred.prime$y, col=2)
-pred.prime <- predict(spl, deriv=2)
-plot(pred.prime$x, pred.prime$y, col=2)
-
-
-sort(coef)[4]
-df = data.frame(x = age, y = data['cg27544190',], tissue = tissue)
-ggplot(data = df, mapping = aes(x = x, y = y)) + geom_jitter() + geom_smooth(method = 'loess', span = 10) +
-  facet_wrap(~ tissue)
-annot['cg27544190',]
-# chr21  33785434
-
-
-sort(coef, decreasing = T)[14]
-df = data.frame(x = age, y = data['cg04528819',], tissue = tissue)
-ggplot(data = df, mapping = aes(x = x, y = y)) + geom_jitter() + geom_smooth(method = 'loess', span = 10) +
-  facet_wrap(~ tissue)
-annot['cg04528819',]
-# chr7 100809049
-
-
-cor.vec = sapply(1:nrow(data), function(x) cor(data[x, ], age, use = 'complete'))
-names(cor.vec) = rownames(data)
-cor.vec = sort(cor.vec)
-head(cor.vec)
-tail(cor.vec)
-
-coef['cg13460409']
-df = data.frame(x = age, y = data['cg13460409',], tissue = tissue)
-ggplot(data = df, mapping = aes(x = x, y = y)) + geom_jitter() + geom_smooth(method = 'loess', span = 10) +
-  facet_wrap(~ tissue)
-annot['cg13460409',]
-
-
-
-
-
-
-
