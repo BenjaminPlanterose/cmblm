@@ -16,12 +16,12 @@
 
 ## Structure
 
-All R-scripts employed are included and segmented as per sections in our publication in Biostatistics.
+All R-scripts employed are included and segmented as per sections in B. Planterose *et al* (**2022**) *Biostatistics*.
 
   1) **Theory**: Implementations of the derived theoretical results
   
   2) **Simulations**: R-scripts employed, raw simulated data and summary statistics for all three simulation rounds. This includes 21 simulations 
-for round 1, 6 simulations for round 2 and 6 simulations for round 3. Conditions are described on *Table 1* of the publication.
+for round 1, 6 simulations for round 2 and 6 simulations for round 3. Parameter space is described on *Table 1* in B. Planterose *et al* (**2022**) *Biostatistics*.
   
   3) **Application**: R-script employed, processed data for EWAS datahub (Horvath´s CpG methylation + phenotypes: age and tissue), results from the missing value injection 
 titration assays and the 4 trained models (2 cmb-lm, 2 cmb-ridge; see publication for details).
