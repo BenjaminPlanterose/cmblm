@@ -120,7 +120,7 @@ simulate_data <- function(n, mu, Cov, theta, R2, p_h, pNA, typeNA, subtype)
   return(data)
 }
 
-# 
+# Multivariate normal distributed data generation + linearly dependent variable
 data_generation <- function(n, mu, Cov, theta, R2)
 {
   m = nrow(Cov)
@@ -293,7 +293,6 @@ test_mean_mode <- function(data, mode)
   metric(y_pred, data$app$y, mode)
 }
 
-
 # Test mice
 test_mice <- function(data, mode)
 {
@@ -306,14 +305,14 @@ test_mice <- function(data, mode)
   metric(y_pred, data$app0$y, mode)
 }
 
-
+# Theta_omega (sweep operator version)
 theta_omega <- function(XtX, omega_c)
 {
   m = nrow(XtX)-2
   sweep.operator(XtX, k = omega_c)[omega_c,m+2]
 }
 
-#
+# Test cmb-lm
 test_cmb_lm <- function(data, mode)
 {
   QR = qr(cbind(1, data$ref$X))
@@ -330,7 +329,7 @@ test_cmb_lm <- function(data, mode)
   metric(y_pred, data$app0$y, mode)
 }
 
-#
+# Metrics (correlation, bias)
 metric <- function(pred, obs, mode)
 {
   if(mode == 1) # cor
@@ -343,7 +342,7 @@ metric <- function(pred, obs, mode)
   }
 }
 
-#
+# Arrange/plot data
 prep_results <- function(RES, dep, N_iter)
 {
   S1 = Reduce(rbind, strsplit(RES$score, ", "))[,-1]
@@ -419,6 +418,7 @@ prep_results <- function(RES, dep, N_iter)
               res.m = list(res.m1 = res.m1, res.m2 = res.m2)))
 }
 
+# plot data
 plot_results <- function(what, res.m1, res.m2, N_iter, dep)
 {
   if(what == 1)

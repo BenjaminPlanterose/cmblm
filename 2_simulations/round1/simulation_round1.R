@@ -19,14 +19,10 @@ library(gplots)
 library(mice)
 library(gtools)
 library(matrixStats)
-#library(imputeMissings)
 library(ggplot2)
-# library(reshape2)
 library(reshape)
 library(Matrix)
 library(fastmatrix)
-
-
 
 # Load functions
 # Global simulation wrapper
@@ -65,7 +61,7 @@ simulate_data <- function(n, mu, Cov, theta, R2, p_h, pNA, typeNA, subtype)
   return(data)
 }
 
-# 
+# Multivariate normal distributed data generation + linearly dependent variable
 data_generation <- function(n, mu, Cov, theta, R2)
 {
   m = nrow(Cov)
@@ -251,6 +247,7 @@ test_mice <- function(data)
   metric(y_pred, data$app0$y)
 }
 
+# Test cmb-lm
 test_cmb_lm <- function(data)
 {
   QR = qr(cbind(1, data$ref$X))
@@ -267,18 +264,21 @@ test_cmb_lm <- function(data)
   metric(y_pred, data$app0$y)
 }
 
+# Theta_omega (sweep operator version)
 theta_omega <- function(XtX, omega_c)
 {
   m = nrow(XtX)-2
   sweep.operator(XtX, k = omega_c)[omega_c,m+2]
 }
 
+# Correlation
 metric <- function(pred, obs)
 {
   rho = cor(pred, obs)
   rho
 }
 
+# Arrange/plot data
 prep_results <- function(RES, typeNA, subtype, dep, N_iter)
 {
   full = Reduce(rbind, strsplit(RES$`mu:full`, ", "))

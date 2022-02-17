@@ -61,7 +61,7 @@ simulate_data <- function(n, mu, Cov, theta, R2, p_h, pNA, typeNA, subtype, tran
   return(data)
 }
 
-# 
+# Data generation module + linearly dependent variable (transformation: {gaussian mixture model (GMM), function})
 data_generation <- function(n, mu, Cov, theta, R2, trans)
 {
   m = nrow(Cov)
@@ -241,7 +241,6 @@ test_mean_mode <- function(data)
   metric(y_pred, data$app$y)
 }
 
-
 # Test mice
 test_mice <- function(data)
 {
@@ -254,7 +253,7 @@ test_mice <- function(data)
   metric(y_pred, data$app0$y)
 }
 
-#
+# Test cmb-lm
 test_cmb_lm <- function(data)
 {
   QR = qr(cbind(1, data$ref$X))
@@ -271,21 +270,21 @@ test_cmb_lm <- function(data)
   metric(y_pred, data$app0$y)
 }
 
-#
+# Theta_omega (sweep operator version)
 theta_omega <- function(XtX, omega_c)
 {
   m = nrow(XtX)-2
   sweep.operator(XtX, k = omega_c)[omega_c,m+2]
 }
 
-#
+# Correlation
 metric <- function(pred, obs)
 {
   rho = cor(pred, obs)
   rho
 }
 
-#
+# Arrange/plot data
 prep_results <- function(RES, typeNA, subtype, dep, N_iter)
 {
   full = Reduce(rbind, strsplit(RES$`mu:full`, ", "))
