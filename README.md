@@ -16,12 +16,12 @@
 
 ## Structure
 
-All R-scripts employed are included and segmented as per sections in B. Planterose *et al* (**2022**) *Biostatistics*.
+All R-scripts employed are included and segmented as per sections in B. Planterose *et al* (**2022**).
 
   1) **Theory**: Implementations of the derived theoretical results
   
   2) **Simulations**: R-scripts employed, raw simulated data and summary statistics for all three simulation rounds. This includes 21 simulations 
-for round 1, 6 simulations for round 2 and 6 simulations for round 3. Parameter space is described on *Table 1* in B. Planterose *et al* (**2022**) *Biostatistics*.
+for round 1, 6 simulations for round 2 and 6 simulations for round 3. Parameter space is described on *Table 1* in B. Planterose *et al* (**2022**).
   
   3) **Application**: R-script employed, processed data for EWAS datahub (Horvath´s CpG methylation + phenotypes: age and tissue), results from the missing value injection 
 titration assays and the 4 trained models (2 cmb-lm, 2 cmb-ridge; see publication for details).
@@ -30,7 +30,7 @@ titration assays and the 4 trained models (2 cmb-lm, 2 cmb-ridge; see publicatio
 For any questions/concerns arising from this Github project, either [report an issue](https://github.com/BenjaminPlanterose/cmblm/issues) or simply contact b.planterosejimenez at erasmusmc.nl
 
 ### References and Supporting Information
-B. Planterose *et al* (**2022**). Combinatorial linear models: an imputation-free method for linear regression prediction on datasets with missing values. *Biostatistics*
+B. Planterose *et al* (**2022**). Combinatorial linear models: an imputation-free method for linear regression prediction on datasets with missing values. Submitted to *Biostatistics*
 
 
 
