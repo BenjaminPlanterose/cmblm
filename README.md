@@ -20,11 +20,10 @@ All R-scripts employed are included and segmented as per sections in B. Plantero
 
   1) **Theory**: Implementations of the derived theoretical results
   
-  2) **Simulations**: R-scripts employed, raw simulated data and summary statistics for all three simulation rounds. This includes 21 simulations 
+  2) **Simulations**: R-scripts employed and raw simulated data for all three simulation rounds. This includes 21 simulations 
 for round 1, 6 simulations for round 2 and 6 simulations for round 3. Parameter space is described on *Table 1* in B. Planterose *et al* (**2022**).
   
-  3) **Application**: R-script employed, processed data for EWAS datahub (Horvath´s CpG methylation + phenotypes: age and tissue), results from the missing value injection 
-titration assays and the 4 trained models (2 cmb-lm, 2 cmb-ridge; see publication for details).
+  3) **Application**: R-script employed, processed data for EWAS datahub (Horvath´s CpG methylation + phenotypes: age and tissue), results from the missing value injection  assays and the 4 trained models (2 cmb-lm, 2 cmb-ridge; see manuscript for details).
   
 
 For any questions/concerns arising from this Github project, either [report an issue](https://github.com/BenjaminPlanterose/cmblm/issues) or simply contact b.planterosejimenez at erasmusmc.nl
